@@ -1,0 +1,42 @@
+Image De-Duplicator
+=======================================
+
+This PHP script will scan a specified directory of images, building up a database of information about each image within that directory (or its subdirectories), including the images' MD5 hashes, file sizes, dimensions and an approximation of their graphical content. This database is then cross-referenced with itself to generate a list of images which are either identical (matching MD5 hashes, etc.) or visually similar (perhaps two sizes of the same image, two formats of the same image content (e.g. GIF vs. PNG) or re-compressed JPEG images (which will therefore have different compression artefacts). This generated list of duplicate images can then be used to manually delete images, as desired.
+
+
+Initial Setup
+-------------------
+Before you can use this script you must first create the two MySQL database tables it requires and change the configuration lines at the top of the script. The required database tables are:
+
+CREATE TABLE `comp` (
+  `a` varchar(255) NOT NULL,
+  `b` varchar(255) NOT NULL,
+  `pixeldiffs` text NOT NULL,
+  `avgpixeldiff` float DEFAULT NULL,
+  PRIMARY KEY (`a`,`b`),
+  KEY `avgpixeldiff` (`avgpixeldiff`)
+);
+
+CREATE TABLE `image` (
+  `name` varchar(255) NOT NULL,
+  `size` mediumint(9) NOT NULL,
+  `hash` char(32) NOT NULL,
+  `isimage` tinyint(1) NOT NULL,
+  `w` smallint(6) NOT NULL,
+  `h` smallint(6) NOT NULL,
+  `pixels` text,
+  PRIMARY KEY (`name`),
+  KEY `size` (`size`),
+  KEY `hash` (`hash`)
+);
+
+
+Usage
+-------------------
+The first execution of this script should be from the command line in order to generate the database of images:
+ `php image-deduplicator.php`
+
+You can then access the same script via a Web browser (and associated httpd) to view its results. The Web half of this script supports a few GET arguments:
+ * "limit" - An integer specifying the number of results to show.
+ * "offset" - An integer specifying the offset to pass to the MySQL "SELECT" query. This can be used to paginate the results.
+ * "rm" - If this argument is present, the script will return a string of quoted filenames that can be passed directly to Linux's `rm` command to delete the images that would have otherwise been displayed if this argument wasn't present.

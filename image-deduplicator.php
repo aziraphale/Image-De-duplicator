@@ -145,7 +145,9 @@ if (!isset($_SERVER['REMOTE_ADDR'])) {
     
     echo "Done!\r\n";
 } else {
-    $stmt = $pdo->prepare("SELECT ia.name AS aname, ib.name AS bname, ia.size AS asize, ib.size AS bsize, ia.hash AS ahash, ib.hash AS bhash, ia.isimage AS aisimage, ib.isimage AS bisimage, ia.w AS aw, ib.w AS bw, ia.h AS ah, ib.h AS bh, c.avgpixeldiff FROM comp AS c LEFT JOIN image AS ia ON c.a=ia.name LEFT JOIN image AS ib ON c.b=ib.name ORDeR BY c.avgpixeldiff ASC LIMIT 50 OFFSET 0");
+    $limit = (int) (isset($_GET['limit']) ? $_GET['limit'] : 50);
+    $offset = (int) (isset($_GET['offset']) ? $_GET['offset'] : 0);
+    $stmt = $pdo->prepare("SELECT ia.name AS aname, ib.name AS bname, ia.size AS asize, ib.size AS bsize, ia.hash AS ahash, ib.hash AS bhash, ia.isimage AS aisimage, ib.isimage AS bisimage, ia.w AS aw, ib.w AS bw, ia.h AS ah, ib.h AS bh, c.avgpixeldiff FROM comp AS c LEFT JOIN image AS ia ON c.a=ia.name LEFT JOIN image AS ib ON c.b=ib.name ORDER BY c.avgpixeldiff ASC LIMIT $limit OFFSET $offset");
     $stmt->execute();
     
     // Pass "?rm" to the URL to generate a list of arguments to a `rm` call (that you can
